@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const repo = 'tiph';
+const nextConfig = {
   output: 'export',
-  basePath: '/tiph',
-  trailingSlash: true
+  trailingSlash: true,
+  assetPrefix: `/${repo}/`,
+  basePath: `/${repo}`,
 };
+
 
 export default nextConfig;
