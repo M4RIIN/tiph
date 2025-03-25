@@ -73,7 +73,7 @@ export default function Home() {
 
   return (
     <main className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Suivi des entraînements 💪</h1>
+      <h1 className="text-2xl font-bold mb-4">Tiph Tracker 💪</h1>
 
       <div className="flex justify-between items-center mb-2">
         <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>⬅️ Mois précédent</button>
