@@ -19,16 +19,17 @@ interface Objective {
 }
 
 const OBJECTIVES: Objective[] = [
-  { weeks: 1, title: "Repas maison", type: "douce", description: "Un bon petit plat cuisiné par toi, avec amour." },
-  { weeks: 2, title: "Massage relax ou sexy", type: "douce/sensuelle", description: "Un massage complet, détente ou coquin, à son choix." },
-  { weeks: 3, title: "Bain + Détente", type: "douce", description: "Bain chaud, bougies, playlist… elle ne fait rien, tu gères tout." },
-  { weeks: 4, title: "Soirée au choix", type: "fun", description: "Elle choisit le film, le repas, et l’activité." },
-  { weeks: 5, title: "Enveloppe Sexy", type: "coquine", description: "Elle pioche une surprise sensuelle parmi des enveloppes préparées par toi." },
-  { weeks: 6, title: "Cadeau Surprise", type: "matérielle", description: "Un petit cadeau qu’elle kiffe : fringue, sportwear, bijou…" },
-  { weeks: 8, title: "Nuit Insolite", type: "expérience", description: "Soirée ou nuit dans un lieu stylé ou insolite (cabane, hôtel secret…)." },
-  { weeks: 10, title: "Fantasme débloqué", type: "coquine", description: "Un de ses fantasmes réalisé, selon vos envies et limites." },
-  { weeks: 12, title: "Week-end surprise", type: "grosse récompense", description: "Un vrai break à deux, dans une ville qu’elle aime ou découvre." },
-  { weeks: 16, title: "Événement marquant", type: "prestige", description: "Une expérience mémorable : spa luxe, vol en montgolfière, dîner étoilé…" },
+  { weeks: 1, title: "Repas maison", type: "douce", description: "Un bon petit plat cuisiné par Marin." },
+  { weeks: 2, title: "Massage relax ou sexy", type: "douce/sensuelle", description: "Un massage complet, détente ou coquin, à ton choix." },
+  { weeks: 3, title: "Bain + Détente", type: "douce", description: "Bain chaud, bougies, playlist… tu ne fais rien, je gères tout." },
+  { weeks: 4, title: "Soirée au choix", type: "fun", description: "Tu choisit le film, le repas, et l’activité." },
+  { weeks: 5, title: "Enveloppe Sexy", type: "coquine", description: "Tu pioches une surprise sensuelle parmi des idées." },
+  { weeks: 6, title: "Cadeau Surprise", type: "matérielle", description: "Un petit cadeau que tu kiffes : fringue, bijou…" },
+  { weeks: 8, title: "Nuit Insolite", type: "expérience", description: "Nuit dans un lieu stylé ou insolite (cabane, air  bnb ..)." },
+  { weeks: 10, title: "Fantasme débloqué", type: "coquine", description: "Un de tes fantasmes réalisé." },
+  { weeks: 12, title: "Week-end surprise", type: "grosse récompense", description: "Un vrai weekend à deux, dans un endroit que tu kiffes ou que tu veux découvrir." },
+  { weeks: 16, title: "Top du top", type: "prestige", description: "Spa luxe, dîner étoilé…" },
+  { weeks: 17, title: "Le graal", type: "prestige", description: "Voyage de fou ?" },
 ];
 
 export default function Home() {
