@@ -1,8 +1,12 @@
 // pages/index.tsx
 "use client";
 
-import { useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, subMonths, addMonths, isSameDay, isSameMonth } from 'date-fns';
+import { ReactElement, useEffect, useState } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, subMonths, addMonths, isSameDay, isSameMonth, isSameWeek, startOfWeek } from 'date-fns';
+import Modal from './component/Modal';
+
+import { collection, setDoc, getDocs, doc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 const trainingTypes = ['🏋️‍♀️ Salle', '🔥 Crossfit'];
 
@@ -12,29 +16,80 @@ interface TrainingDay {
 }
 
 interface Objective {
-  weeks: number;
+  cost: number;
   title: string;
   type: string;
   description: string;
 }
 
 const OBJECTIVES: Objective[] = [
-  { weeks: 1, title: "Repas maison", type: "douce", description: "Un bon petit plat cuisiné par Marin." },
-  { weeks: 2, title: "Massage relax ou sexy", type: "douce/sensuelle", description: "Un massage complet, détente ou coquin, à ton choix." },
-  { weeks: 3, title: "Bain + Détente", type: "douce", description: "Bain chaud, bougies, playlist… tu ne fais rien, je gères tout." },
-  { weeks: 4, title: "Soirée au choix", type: "fun", description: "Tu choisit le film, le repas, et l’activité." },
-  { weeks: 5, title: "Enveloppe Sexy", type: "coquine", description: "Tu pioches une surprise sensuelle parmi des idées." },
-  { weeks: 6, title: "Cadeau Surprise", type: "matérielle", description: "Un petit cadeau que tu kiffes : fringue, bijou…" },
-  { weeks: 8, title: "Nuit Insolite", type: "expérience", description: "Nuit dans un lieu stylé ou insolite (cabane, air  bnb ..)." },
-  { weeks: 10, title: "Fantasme débloqué", type: "coquine", description: "Un de tes fantasmes réalisé." },
-  { weeks: 12, title: "Week-end surprise", type: "grosse récompense", description: "Un vrai weekend à deux, dans un endroit que tu kiffes ou que tu veux découvrir." },
-  { weeks: 16, title: "Top du top", type: "prestige", description: "Spa luxe, dîner étoilé…" },
-  { weeks: 17, title: "Le graal", type: "prestige", description: "Voyage de fou ?" },
+  { cost: 2, title: "Repas maison", type: "douce", description: "Un bon petit plat cuisiné par Marin." },
+  { cost: 3, title: "Massage relax ou sexy", type: "douce/sensuelle", description: "Un massage complet, détente ou coquin, à ton choix." },
+  { cost: 4, title: "Bain + Détente", type: "douce", description: "Bain chaud, bougies, playlist… tu ne fais rien, je gères tout." },
+  { cost: 5, title: "Soirée au choix", type: "fun", description: "Tu choisit le film, le repas, et l’activité." },
+  { cost: 6, title: "Enveloppe Sexy", type: "coquine", description: "Tu pioches une surprise sensuelle parmi des idées." },
+  { cost: 7, title: "Cadeau Surprise", type: "matérielle", description: "Un petit cadeau que tu kiffes : fringue, bijou…" },
+  { cost: 8, title: "Nuit Insolite", type: "expérience", description: "Nuit dans un lieu stylé ou insolite (cabane, air  bnb ..)." },
+  { cost: 10, title: "Fantasme débloqué", type: "coquine", description: "Un de tes fantasmes réalisé." },
+  { cost: 13, title: "Week-end surprise", type: "grosse récompense", description: "Un vrai weekend à deux, dans un endroit que tu kiffes ou que tu veux découvrir." },
+  { cost: 16, title: "Top du top", type: "prestige", description: "Spa luxe, dîner étoilé…" },
+  { cost: 17, title: "Le graal", type: "prestige", description: "Voyage de fou ?" },
 ];
 
 export default function Home() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [trainingDays, setTrainingDays] = useState<TrainingDay[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedDay, setSelectedDay] = useState<Date>();
+  const [contentModal, setContentModal] = useState<ReactElement>();
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const saveToFirebase = async (trainingDays:TrainingDay[]) => {
+    await setDoc(doc(db, "users", "tiph"), {
+      trainingDays
+    });
+  };
+
+  useEffect(() => {
+    const loadFromFirebase = async () => {
+      const docSnap = await getDocs(collection(db, "users"));
+      const userDoc = docSnap.docs.find(doc => doc.id === "tiph");
+      if (userDoc) {
+        const data = userDoc.data();
+        if (data.trainingDays) {
+          setTrainingDays(data.trainingDays);
+        }
+      }
+    };
+    loadFromFirebase();
+  }, []);
+  
+
+  const modalContentAdd =(day:Date) => {
+   return ( <div className='flex h-30 gap-2'>
+    <div className=' flex-1 flex border rounded-sm cursor-pointer' onClick={()=>handleTypeSeance('salle', day)}>
+      <div className='m-auto'>
+      🏋️‍♀️ Salle
+      </div>
+    </div>
+    <div  className=' flex-1 flex border rounded-sm cursor-pointer' onClick={()=>handleTypeSeance('crossfit',day)}>
+      <div className='m-auto'>
+      🔥 Crossfit
+      </div>
+    </div>
+  </div>
+   )
+  }
+
+  const modalContentDelete = (day:Date)=> {
+    const dateStr = format(day, 'yyyy-MM-dd');
+   return( <div >
+      On supprime cette séance ?
+      
+      <button onClick={()=>{setTrainingDays(trainingDays.filter(td => td.date !== dateStr));setIsModalOpen(false);saveToFirebase(trainingDays.filter(td => td.date !== dateStr))}}>Yes</button>
+      <button onClick={()=>{setIsModalOpen(false)}}>Nope.</button>
+    </div>)
+  }
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -42,20 +97,28 @@ export default function Home() {
   });
 
   const handleDayClick = (day: Date) => {
+    setSelectedDay(day)
     const dateStr = format(day, 'yyyy-MM-dd');
     const alreadyExists = trainingDays.find(td => td.date === dateStr);
     if (alreadyExists) {
-      setTrainingDays(trainingDays.filter(td => td.date !== dateStr));
+      setContentModal(() => modalContentDelete(day))
+      setIsModalOpen(true)
     } else {
-      const type = prompt("Quel type d'entraînement ? (salle / crossfit)");
-      if (type === 'salle' || type === 'crossfit') {
-        setTrainingDays([...trainingDays, {
-          date: dateStr,
-          type: type === 'salle' ? '🏋️‍♀️ Salle' : '🔥 Crossfit'
-        }]);
-      }
+      setContentModal(() => modalContentAdd(day))
+      setIsModalOpen(true);
     }
   };
+
+  const handleTypeSeance = (type:String, day:Date)=>{
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const newState = [...trainingDays, {
+      date: dateStr,
+      type: type === 'salle' ? '🏋️‍♀️ Salle' : '🔥 Crossfit'
+    }];
+    setTrainingDays(newState);
+    setIsModalOpen(false)
+    saveToFirebase(newState)
+  }
 
   const getTrainingForDay = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
@@ -63,13 +126,48 @@ export default function Home() {
   };
 
   const getStats = () => {
-    const total = trainingDays.filter(td => isSameMonth(new Date(td.date), currentMonth)).length;
-    const salle = trainingDays.filter(td => isSameMonth(new Date(td.date), currentMonth) && td.type === '🏋️‍♀️ Salle').length;
-    const crossfit = trainingDays.filter(td => isSameMonth(new Date(td.date), currentMonth) && td.type === '🔥 Crossfit').length;
-    return { total, salle, crossfit };
+    const totalSemaineActuelle = trainingDays.filter(td => isSameMonth(new Date(td.date), currentMonth) && isSameWeek(new Date(td.date),new Date())).length;
+    const totalSalleSemaineActuelle = trainingDays.filter(td => isSameMonth(new Date(td.date), currentMonth) && isSameWeek(new Date(td.date),new Date()) && td.type === '🏋️‍♀️ Salle').length;
+    const totalCossfitSemaineActuelle = trainingDays.filter(td => isSameMonth(new Date(td.date), currentMonth) && isSameWeek(new Date(td.date),new Date()) && td.type === '🔥 Crossfit').length;
+    
+
+    const totalMoisActuel = trainingDays.filter(td => isSameMonth(new Date(td.date), new Date())).length;
+    const totalSalleMoisActuel = trainingDays.filter(td => isSameMonth(new Date(td.date), new Date()) && td.type === '🏋️‍♀️ Salle').length;
+    const totalCossfitMoisActuel = trainingDays.filter(td => isSameMonth(new Date(td.date), new Date())  && td.type === '🔥 Crossfit').length;
+    
+    return { totalSemaineActuelle,totalSalleSemaineActuelle,totalCossfitSemaineActuelle,totalMoisActuel,totalSalleMoisActuel,totalCossfitMoisActuel };
   };
 
-  const { total, salle, crossfit } = getStats();
+  const { totalSemaineActuelle, totalSalleSemaineActuelle, totalCossfitSemaineActuelle,totalCossfitMoisActuel,totalMoisActuel,totalSalleMoisActuel } = getStats();
+
+  const getValidWeeksCount = (trainingDays: TrainingDay[]) => {
+    // On regroupe les entraînements par semaine
+    const weeksMap = new Map<string, TrainingDay[]>();
+  
+    trainingDays.forEach(td => {
+      const weekStart = format(startOfWeek(new Date(td.date), { weekStartsOn: 1 }), 'yyyy-MM-dd'); // Lundi = début de semaine
+      if (!weeksMap.has(weekStart)) {
+        weeksMap.set(weekStart, []);
+      }
+      weeksMap.get(weekStart)?.push(td);
+    });
+  
+    // On compte les semaines valides
+    let validWeeks = 0;
+  
+    weeksMap.forEach(weekTrainings => {
+      const salle = weekTrainings.filter(td => td.type === '🏋️‍♀️ Salle').length;
+      const crossfit = weekTrainings.filter(td => td.type === '🔥 Crossfit').length;
+  
+      if (salle >= 1 && crossfit >= 2) {
+        validWeeks += 1;
+      }
+    });
+  
+    return validWeeks;
+  };
+
+  const validWeeks = getValidWeeksCount(trainingDays);
 
   return (
     <main className="p-4 max-w-3xl mx-auto">
@@ -96,19 +194,115 @@ export default function Home() {
           );
         })}
       </div>
+      <p className="mt-4 text-sm text-gray-700">
+        Nombre Semaines valides (min 1 salle + 2 crossfit) : <strong>{validWeeks}</strong> points
+      </p>
+
 
       <div className="bg-white shadow rounded-lg p-4 mb-6">
-        <h2 className="text-lg font-semibold mb-2">Objectifs du mois 📅</h2>
+        <h2 className="text-lg font-semibold mb-2">Objectifs de la semaine 📅</h2>
         <ul className="list-disc ml-5 text-sm">
-          <li>{total} séances au total</li>
-          <li>{salle} séances de salle (objectif: 1+ par semaine)</li>
-          <li>{crossfit} séances de crossfit (objectif: 2+ par semaine)</li>
+          {/* <li>
+            <div className='flex gap-2'>
+              <div className='whitespace-nowrap'>
+              {total} séances au total ( objectif: 3 par semaine)
+              </div>
+              <div className="h-4 w-full bg-gray-200 rounded relative">
+                <div
+                  className="h-4 bg-green-500 rounded"
+                  style={{ width: `${Math.min((total / 3) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </li> */}
+          
+          <li>
+          <div className='flex gap-2'>
+          <div className='whitespace-nowrap'>
+              {totalSalleSemaineActuelle} séances de salle 
+              </div>
+              <div className=" h-4 w-full bg-gray-200 rounded relative">
+                <div
+                  className="h-4 bg-green-500 rounded"
+                  style={{ width: `${Math.min((totalSalleSemaineActuelle /1) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </li>
+          <li>
+          <div className='flex gap-2'>
+          <div className='whitespace-nowrap'>
+              {totalCossfitSemaineActuelle} séances de crossfit 
+              </div>
+              <div className=" h-4 w-full bg-gray-200 rounded relative">
+                <div
+                  className="h-4 bg-green-500 rounded"
+                  style={{ width: `${Math.min((totalCossfitSemaineActuelle / 2) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </li>
         </ul>
 
         <div className="mt-4 h-4 w-full bg-gray-200 rounded">
           <div
             className="h-4 bg-green-500 rounded"
-            style={{ width: `${Math.min((total / 12) * 100, 100)}%` }}
+            style={{ width: `${Math.min((totalSemaineActuelle / 3) * 100, 100)}%` }}
+          ></div>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">Progression vers objectif hebdomadaire (3 séances)</p>
+      </div>
+
+
+      <div className="bg-white shadow rounded-lg p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-2">Objectifs du mois 📅</h2>
+        <ul className="list-disc ml-5 text-sm">
+          {/* <li>
+            <div className='flex gap-2'>
+              <div className='whitespace-nowrap'>
+              {total} séances au total ( objectif: 3 par semaine)
+              </div>
+              <div className="h-4 w-full bg-gray-200 rounded relative">
+                <div
+                  className="h-4 bg-green-500 rounded"
+                  style={{ width: `${Math.min((total / 3) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </li> */}
+          
+          <li>
+          <div className='flex gap-2'>
+          <div className='whitespace-nowrap'>
+              {totalSalleMoisActuel} séances de salle 
+              </div>
+              <div className=" h-4 w-full bg-gray-200 rounded relative">
+                <div
+                  className="h-4 bg-green-500 rounded"
+                  style={{ width: `${Math.min((totalSalleMoisActuel /4) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </li>
+          <li>
+          <div className='flex gap-2'>
+          <div className='whitespace-nowrap'>
+              {totalCossfitMoisActuel} séances de crossfit 
+              </div>
+              <div className=" h-4 w-full bg-gray-200 rounded relative">
+                <div
+                  className="h-4 bg-green-500 rounded"
+                  style={{ width: `${Math.min((totalCossfitMoisActuel / 8) * 100, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        <div className="mt-4 h-4 w-full bg-gray-200 rounded">
+          <div
+            className="h-4 bg-green-500 rounded"
+            style={{ width: `${Math.min((totalMoisActuel / 12) * 100, 100)}%` }}
           ></div>
         </div>
         <p className="text-xs text-gray-500 mt-1">Progression vers objectif mensuel (12 séances)</p>
@@ -118,11 +312,11 @@ export default function Home() {
         <h2 className="text-lg font-semibold mb-4">Récompenses 🔥</h2>
         <ul className="space-y-3">
           {OBJECTIVES.map(obj => {
-            const percent = Math.min((total / (obj.weeks * 3)) * 100, 100);
+            const percent = Math.min((validWeeks / (obj.cost)) * 100, 100);
             return (
-              <li key={obj.weeks} className="border p-3 rounded">
+              <li key={obj.cost} className="border p-3 rounded">
                 <div className="flex justify-between text-sm font-medium">
-                  <span>{obj.title}</span>
+                  <span>{obj.title} (coût: {obj.cost} point(s))</span>
                   <span>{percent.toFixed(0)}%</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded mt-1">
@@ -137,6 +331,14 @@ export default function Home() {
           })}
         </ul>
       </div>
+      <Modal isOpen={isModalOpen} onClosed={() => {
+        setIsModalOpen(false);
+      } } 
+      content={
+       contentModal ?? (<div></div>)
+      }/>
     </main>
+
+
   );
 }
