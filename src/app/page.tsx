@@ -141,25 +141,24 @@ export default function Home() {
   const { totalSemaineActuelle, totalSalleSemaineActuelle, totalCossfitSemaineActuelle,totalCossfitMoisActuel,totalMoisActuel,totalSalleMoisActuel } = getStats();
 
   const getValidWeeksCount = (trainingDays: TrainingDay[]) => {
-    // On regroupe les entraînements par semaine
+
     const weeksMap = new Map<string, TrainingDay[]>();
   
     trainingDays.forEach(td => {
-      const weekStart = format(startOfWeek(new Date(td.date), { weekStartsOn: 1 }), 'yyyy-MM-dd'); // Lundi = début de semaine
+      const weekStart = format(startOfWeek(new Date(td.date), { weekStartsOn: 1 }), 'yyyy-MM-dd');
       if (!weeksMap.has(weekStart)) {
         weeksMap.set(weekStart, []);
       }
       weeksMap.get(weekStart)?.push(td);
     });
   
-    // On compte les semaines valides
     let validWeeks = 0;
   
     weeksMap.forEach(weekTrainings => {
       const salle = weekTrainings.filter(td => td.type === '🏋️‍♀️ Salle').length;
       const crossfit = weekTrainings.filter(td => td.type === '🔥 Crossfit').length;
   
-      if (salle >= 1 && crossfit >= 2) {
+      if (salle + crossfit >= 3) {
         validWeeks += 1;
       }
     });
@@ -195,7 +194,7 @@ export default function Home() {
         })}
       </div>
       <p className="mt-4 text-sm text-gray-700">
-        Nombre Semaines valides (min 1 salle + 2 crossfit) : <strong>{validWeeks}</strong> points
+        Nombre Semaines valides (3 entraînements par semaines) : <strong>{validWeeks}</strong> points
       </p>
 
 
@@ -221,7 +220,7 @@ export default function Home() {
           <div className='whitespace-nowrap'>
               {totalSalleSemaineActuelle} séances de salle 
               </div>
-              <div className=" h-4 w-full bg-gray-200 rounded relative">
+              <div className="h-4 w-full bg-gray-200 rounded relative">
                 <div
                   className="h-4 bg-green-500 rounded"
                   style={{ width: `${Math.min((totalSalleSemaineActuelle /1) * 100, 100)}%` }}
