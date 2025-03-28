@@ -24,13 +24,13 @@ interface Objective {
 
 const OBJECTIVES: Objective[] = [
   { cost: 2, title: "Repas maison", type: "douce", description: "Un bon petit plat cuisiné par Marin." },
-  { cost: 3, title: "Massage relax ou sexy", type: "douce/sensuelle", description: "Un massage complet, détente ou coquin, à ton choix." },
+  { cost: 3, title: "Massage relax", type: "douce/sensuelle", description: "Un massage complet, détente, à ton choix." },
   { cost: 4, title: "Bain + Détente", type: "douce", description: "Bain chaud, bougies, playlist… tu ne fais rien, je gères tout." },
-  { cost: 5, title: "Soirée au choix", type: "fun", description: "Tu choisit le film, le repas, et l’activité." },
-  { cost: 6, title: "Enveloppe Sexy", type: "coquine", description: "Tu pioches une surprise sensuelle parmi des idées." },
+  { cost: 5, title: "Soirée au choix", type: "fun", description: "Tu choisis le film, le repas, et l’activité." },
+  { cost: 6, title: "Enveloppe de choix", type: "coquine", description: "Tu pioches une surprise parmi des idées." },
   { cost: 7, title: "Cadeau Surprise", type: "matérielle", description: "Un petit cadeau que tu kiffes : fringue, bijou…" },
   { cost: 8, title: "Nuit Insolite", type: "expérience", description: "Nuit dans un lieu stylé ou insolite (cabane, air  bnb ..)." },
-  { cost: 10, title: "Fantasme débloqué", type: "coquine", description: "Un de tes fantasmes réalisé." },
+  { cost: 10, title: "Petit goal life débloqué", type: "coquine", description: "Un de tes petit goal life  réalisé." },
   { cost: 13, title: "Week-end surprise", type: "grosse récompense", description: "Un vrai weekend à deux, dans un endroit que tu kiffes ou que tu veux découvrir." },
   { cost: 16, title: "Top du top", type: "prestige", description: "Spa luxe, dîner étoilé…" },
   { cost: 17, title: "Le graal", type: "prestige", description: "Voyage de fou ?" },
